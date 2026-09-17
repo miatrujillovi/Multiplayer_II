@@ -5,5 +5,7 @@
 
 void AMultiplayerGameState::BeginPlay()
 {
+	Super::BeginPlay();
+
 	UE_LOG(LogTemp, Warning, TEXT("GameState::BeginPlay"))
 }
