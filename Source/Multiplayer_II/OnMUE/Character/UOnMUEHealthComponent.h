@@ -6,7 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "UOnMUEHealthComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDamageReceivedVisuals);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDamage);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDamageReceivedVisuals);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -18,11 +19,11 @@ public:
 	// Sets default values for this component's properties
 	UUOnMUEHealthComponent();
 
-	UFUNCTION(BlueprintCallable, Category = "OnDie")
+	/*UFUNCTION(BlueprintCallable, Category = "OnDie")
 	void ReceivedDeathVisuals();
 
 	UPROPERTY(BlueprintAssignable, Category = "OnDie")
-	FOnDamageReceivedVisuals OnDeath;
+	FOnDamageReceivedVisuals OnDeath;*/
 
 protected:
 	// Called when the game starts
@@ -38,5 +39,9 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+	UPROPERTY(BlueprintAssignable, Category = "Health")
+	FOnDamage OnDamage;
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void OnDamageReceived();
 };

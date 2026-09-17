@@ -14,10 +14,10 @@ UUOnMUEHealthComponent::UUOnMUEHealthComponent()
 	// ...
 }
 
-void UUOnMUEHealthComponent::ReceivedDeathVisuals()
+/*void UUOnMUEHealthComponent::ReceivedDeathVisuals()
 {
 	OnDeath.Broadcast();
-}
+}*/
 
 
 // Called when the game starts
@@ -27,7 +27,8 @@ void UUOnMUEHealthComponent::BeginPlay()
 
 	// ...
 
-	ReceivedDeathVisuals();
+	OnDamageReceived();
+	//ReceivedDeathVisuals();
 	
 }
 
@@ -37,8 +38,13 @@ void UUOnMUEHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	ReceivedDeathVisuals();
+	//ReceivedDeathVisuals();
 
 	// ...
+}
+
+void UUOnMUEHealthComponent::OnDamageReceived()
+{
+	OnDamage.Broadcast();
 }
 
