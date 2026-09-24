@@ -9,7 +9,9 @@
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
+#include "GameFramework/PlayerState.h"
 #include "Multiplayer_II.h"
+#include <Multiplayer_IIPlayerController.h>
 
 namespace
 {
@@ -103,6 +105,30 @@ void AMultiplayer_IICharacter::BeginPlay()
 	}
 }
 
+void AMultiplayer_IICharacter::OnRep_PlayerState() 
+{
+	Super::OnRep_PlayerState();
+
+	APlayerState* PS = GetPlayerState();
+	if (PS && IsLocallyControlled()) 
+	{
+		CurrentPS = PS;
+		UE_LOG(LogTemp, Display, TEXT("Player: %d, Score: %f"), CurrentPS->GetPlayerId(), CurrentPS->GetScore());
+	}
+}
+
+void AMultiplayer_IICharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	CurrentPS = GetPlayerState();
+
+	if (CurrentPS && IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Display, TEXT("Player: %d, Score: %f"), CurrentPS->GetPlayerId(), CurrentPS->GetScore());
+	}
+}
+
 void AMultiplayer_IICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {	
 	// Set up action bindings
@@ -176,4 +202,21 @@ void AMultiplayer_IICharacter::DoJumpEnd()
 {
 	// pass StopJumping to the character
 	StopJumping();
+}
+
+void AMultiplayer_IICharacter::DoDestroy()
+{
+	if (!IsLocallyControlled()) return;
+
+	//if (CurrentPS)
+	//{
+		CurrentPS->SetScore(CurrentPS->GetScore() + 1);
+
+		UE_LOG(LogTemp, Display, TEXT("Player: %d, Score: %f"), CurrentPS->GetPlayerId(), CurrentPS->GetScore());
+	//}
+
+	AMultiplayer_IIPlayerController* PlayerController = Cast<AMultiplayer_IIPlayerController>(GetController());
+	PlayerController->Server_SolicitarRespawn();
+
+	//Destroy();
 }

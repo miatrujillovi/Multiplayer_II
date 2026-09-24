@@ -24,6 +24,9 @@ public:
 	/** Constructor */
 	AMultiplayer_IIPlayerController();
 
+	UFUNCTION(Server, Reliable)
+	void Server_SolicitarRespawn();
+
 protected:
 
 	/** Input Mapping Contexts */

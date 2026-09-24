@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
-#include "OnlinePlayerState.generated.h"
+#include "MultiplayerPlayerState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MULTIPLAYER_II_API AOnlinePlayerState : public APlayerState
+class MULTIPLAYER_II_API AMultiplayerPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 	

@@ -8,12 +8,28 @@
 #include "Multiplayer_IICameraManager.h"
 #include "Blueprint/UserWidget.h"
 #include "Multiplayer_II.h"
+#include "GameFramework/GameModeBase.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
 AMultiplayer_IIPlayerController::AMultiplayer_IIPlayerController()
 {
 	// set the player camera manager class
 	PlayerCameraManagerClass = AMultiplayer_IICameraManager::StaticClass();
+}
+
+void AMultiplayer_IIPlayerController::Server_SolicitarRespawn_Implementation()
+{
+	APawn* MyPawn = GetPawn();
+	if (MyPawn)
+	{
+		MyPawn->Destroy();
+	}
+
+	AGameModeBase* GM = GetWorld()->GetAuthGameMode();
+	if (GM) 
+	{
+		GM->RestartPlayer(this);
+	}
 }
 
 void AMultiplayer_IIPlayerController::BeginPlay()
