@@ -11,6 +11,17 @@ AAPickUp::AAPickUp()
 
 	bReplicates = true;
 
+	bIsAvailable = true;
+}
+
+void AAPickUp::OnRep_IsAvailable()
+{
+	UStaticMeshComponent* Mesh = FindComponentByClass<UStaticMeshComponent>();
+
+	if (Mesh)
+	{
+		Mesh->SetVisibility(bIsAvailable);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -41,6 +52,19 @@ void AAPickUp::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AAPickUp, bIsAvailable);
+}
+
+void AAPickUp::PickUpAmmo()
+{
+	if (HasAuthority()) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Se ha consumido el objeto"));
+
+		bIsAvailable = false;
+
+		//Update the server
+		OnRep_IsAvailable();
+	}
 }
 
 

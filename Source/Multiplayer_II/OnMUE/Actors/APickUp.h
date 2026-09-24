@@ -16,8 +16,11 @@ public:
 	// Sets default values for this actor's properties
 	AAPickUp();
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Replicated")
+	UPROPERTY(ReplicatedUsing = OnRep_IsAvailable, BlueprintReadOnly, Category = "Replicated")
 	bool bIsAvailable;
+
+	UFUNCTION()
+	void OnRep_IsAvailable();
 
 protected:
 	// Called when the game starts or when spawned
@@ -28,4 +31,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION(BlueprintCallable)
+	void PickUpAmmo();
 };
