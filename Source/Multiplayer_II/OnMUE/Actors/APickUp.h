@@ -2,9 +2,9 @@
 
 #pragma once
 
+//#include "APickUp.generated.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Net/UnrealNetwork.h"
 #include "APickUp.generated.h"
 
 UCLASS()
@@ -16,11 +16,21 @@ public:
 	// Sets default values for this actor's properties
 	AAPickUp();
 
-	UPROPERTY(ReplicatedUsing = OnRep_IsAvailable, BlueprintReadOnly, Category = "Replicated")
+	//Set a collision component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UBoxComponent* BoxCollision;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Replicated")
 	bool bIsAvailable;
 
+	UPROPERTY(ReplicatedUsing = OnRep_SetAmmoParticles, BlueprintReadOnly, Category = "Replicated")
+	int32 CurrentAmmo = 0;
+
 	UFUNCTION()
-	void OnRep_IsAvailable();
+	void OnRep_SetAmmoParticles(int32 OldAmmo);
+
+	/*UFUNCTION()
+	void OnRep_IsAvailable();*/
 
 protected:
 	// Called when the game starts or when spawned
@@ -32,6 +42,5 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UFUNCTION(BlueprintCallable)
-	void PickUpAmmo();
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

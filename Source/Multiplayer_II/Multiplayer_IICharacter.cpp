@@ -7,10 +7,15 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
+
+#include "AbilitySystemComponent.h"
+#include "OnMUE/Online/MultiplayerPlayerState.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/PlayerState.h"
 #include "Multiplayer_II.h"
+#include "OnMUE/Actors/OnMueWC.h"
 #include <Multiplayer_IIPlayerController.h>
 
 namespace
@@ -73,6 +78,19 @@ AMultiplayer_IICharacter::AMultiplayer_IICharacter()
 	// Configure character movement
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 	GetCharacterMovement()->AirControl = 0.5f;
+	
+	// Configure the WeaponComponent
+	WeaponComponent = CreateDefaultSubobject<UOnMUEWC>(TEXT("WeaponComponent"));
+}
+
+FVector AMultiplayer_IICharacter::GetAimOrigin() const
+{
+	return GetPawnViewLocation(); //Returns the pawn location
+}
+
+FVector AMultiplayer_IICharacter::GetAimDirection() const
+{
+	return GetViewRotation().Vector(); //Returns the pawn rotation
 }
 
 void AMultiplayer_IICharacter::BeginPlay()
@@ -109,23 +127,31 @@ void AMultiplayer_IICharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	APlayerState* PS = GetPlayerState();
-	if (PS && IsLocallyControlled()) 
-	{
-		CurrentPS = PS;
-		UE_LOG(LogTemp, Display, TEXT("Player: %d, Score: %f"), CurrentPS->GetPlayerId(), CurrentPS->GetScore());
-	}
+	InitAbilityActorInfo();
 }
 
 void AMultiplayer_IICharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	CurrentPS = GetPlayerState();
+	InitAbilityActorInfo();
+}
 
-	if (CurrentPS && IsLocallyControlled())
+void AMultiplayer_IICharacter::InitAbilityActorInfo()
+{
+	AMultiplayerPlayerState* OnlinePS = GetPlayerState<AMultiplayerPlayerState>();
+	
+	if (OnlinePS)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Player: %d, Score: %f"), CurrentPS->GetPlayerId(), CurrentPS->GetScore());
+		//ASC
+		UAbilitySystemComponent* ASC = OnlinePS->GetAbilitySystemComponent();
+		if (ASC)
+		{
+			//Get Owner and Avatar
+			ASC->InitAbilityActorInfo(OnlinePS, this);
+			
+			//AbilitySystemComponent = ASC;
+		}
 	}
 }
 
@@ -144,6 +170,9 @@ void AMultiplayer_IICharacter::SetupPlayerInputComponent(UInputComponent* Player
 		// Looking/Aiming
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMultiplayer_IICharacter::LookInput);
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &AMultiplayer_IICharacter::LookInput);
+		
+		//Fire
+		EnhancedInputComponent->BindAction(FireInput, ETriggerEvent::Triggered, this, &AMultiplayer_IICharacter::DoFire);
 	}
 	else
 	{
@@ -204,19 +233,10 @@ void AMultiplayer_IICharacter::DoJumpEnd()
 	StopJumping();
 }
 
-void AMultiplayer_IICharacter::DoDestroy()
+void AMultiplayer_IICharacter::DoFire()
 {
-	if (!IsLocallyControlled()) return;
-
-	//if (CurrentPS)
-	//{
-		CurrentPS->SetScore(CurrentPS->GetScore() + 1);
-
-		UE_LOG(LogTemp, Display, TEXT("Player: %d, Score: %f"), CurrentPS->GetPlayerId(), CurrentPS->GetScore());
-	//}
-
-	AMultiplayer_IIPlayerController* PlayerController = Cast<AMultiplayer_IIPlayerController>(GetController());
-	PlayerController->Server_SolicitarRespawn();
-
-	//Destroy();
+	if (WeaponComponent)
+	{
+		WeaponComponent->TryStartFire();
+	}
 }

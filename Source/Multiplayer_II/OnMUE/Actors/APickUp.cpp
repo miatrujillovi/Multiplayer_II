@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "Components/BoxComponent.h"
 #include "OnMUE/Actors/APickUp.h"
+#include "OnMUE/Character/TestCharacter.h"
+#include "NET/UnrealNetwork.h"
 
 // Sets default values
 AAPickUp::AAPickUp()
@@ -14,14 +16,10 @@ AAPickUp::AAPickUp()
 	bIsAvailable = true;
 }
 
-void AAPickUp::OnRep_IsAvailable()
+void AAPickUp::OnRep_SetAmmoParticles(int32 OldAmmo)
 {
-	UStaticMeshComponent* Mesh = FindComponentByClass<UStaticMeshComponent>();
-
-	if (Mesh)
-	{
-		Mesh->SetVisibility(bIsAvailable);
-	}
+	FString NewAmmo = HasAuthority() ? TEXT("SERVER") : TEXT("CLIENT");
+	//UE_LOG(LogTemp, Warning, TEXT("%s Actor: OLDAMMO: %d | CURRRENT AMMO: "), );
 }
 
 // Called when the game starts or when spawned
@@ -54,16 +52,28 @@ void AAPickUp::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLi
 	DOREPLIFETIME(AAPickUp, bIsAvailable);
 }
 
-void AAPickUp::PickUpAmmo()
+void AAPickUp::NotifyActorBeginOverlap(AActor* OtherActor)
 {
-	if (HasAuthority()) 
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Se ha consumido el objeto"));
+	Super::NotifyActorBeginOverlap(OtherActor);
+	
+	ATestCharacter* ACharacter = Cast<ATestCharacter>(OtherActor);
 
+	if (ACharacter && HasAuthority())
+	{
 		bIsAvailable = false;
 
-		//Update the server
-		OnRep_IsAvailable();
+		int32 OldAmmo = CurrentAmmo;
+
+		CurrentAmmo = 10;
+
+		SetActorHiddenInGame(true);
+
+		SetActorEnableCollision(false);
+
+		SetLifeSpan(5.0f);
+
+		//Old Value from my replicated property
+		OnRep_SetAmmoParticles(OldAmmo);
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "OnMUE/Data/IAimSource.h"
 #include "Multiplayer_IICharacter.generated.h"
 
 class UInputComponent;
@@ -19,7 +20,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
  *  A basic first person character
  */
 UCLASS(abstract)
-class AMultiplayer_IICharacter : public ACharacter
+class AMultiplayer_IICharacter : public ACharacter, public IAimSource
 {
 	GENERATED_BODY()
 
@@ -50,12 +51,19 @@ protected:
 	class UInputAction* MouseLookAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	class UInputAction* DestroyInput;
+	class UInputAction* FireInput;
 	
 public:
 	AMultiplayer_IICharacter();
 
 	APlayerState* CurrentPS;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	class UOnMUEWC* WeaponComponent;
+	
+	virtual FVector GetAimOrigin() const override;
+	
+	virtual FVector GetAimDirection() const override;
 
 protected:
 
@@ -86,7 +94,7 @@ protected:
 
 	/*Destroy the actor and adds a point to the score*/
 	UFUNCTION(BlueprintCallable, Category = "Input")
-	virtual void DoDestroy();
+	virtual void DoFire();
 
 protected:
 
@@ -106,5 +114,6 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
+	void InitAbilityActorInfo();
 };
 
