@@ -10,6 +10,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "OnMUE/Online/MultiplayerPlayerState.h"
+#include "GameplayTagsManager.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
@@ -81,6 +82,10 @@ AMultiplayer_IICharacter::AMultiplayer_IICharacter()
 	
 	// Configure the WeaponComponent
 	WeaponComponent = CreateDefaultSubobject<UOnMUEWC>(TEXT("WeaponComponent"));
+	
+	// Get the saved tag in DefaultGameplayTag.ini
+	SprintingTag = UGameplayTagsManager::Get().RequestGameplayTag(FName("State.Movement.Sprinting"));
+	StunnedTag = UGameplayTagsManager::Get().RequestGameplayTag(FName("State.Debug.Stunned"));
 }
 
 FVector AMultiplayer_IICharacter::GetAimOrigin() const
@@ -155,6 +160,27 @@ void AMultiplayer_IICharacter::InitAbilityActorInfo()
 	}
 }
 
+void AMultiplayer_IICharacter::ToggleStun(bool bIsStunned)
+{
+	if (AMultiplayerPlayerState* OnlinePS = GetPlayerState<AMultiplayerPlayerState>())
+	{
+		if (UAbilitySystemComponent* ASC = OnlinePS->GetAbilitySystemComponent())
+		{
+			if (bIsStunned)
+			{
+				if (!ASC->HasMatchingGameplayTag(StunnedTag))
+				{
+					ASC->AddLooseGameplayTag(StunnedTag);
+				}
+			}
+			else
+			{
+				ASC->RemoveLooseGameplayTag(StunnedTag);
+			}
+		}
+	}
+}
+
 void AMultiplayer_IICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {	
 	// Set up action bindings
@@ -173,6 +199,10 @@ void AMultiplayer_IICharacter::SetupPlayerInputComponent(UInputComponent* Player
 		
 		//Fire
 		EnhancedInputComponent->BindAction(FireInput, ETriggerEvent::Triggered, this, &AMultiplayer_IICharacter::DoFire);
+		
+		//Sprint
+		EnhancedInputComponent->BindAction(SprintInputAction, ETriggerEvent::Triggered, this, &AMultiplayer_IICharacter::StartSprinting);
+		EnhancedInputComponent->BindAction(SprintInputAction, ETriggerEvent::Completed, this, &AMultiplayer_IICharacter::StopSprinting);
 	}
 	else
 	{
@@ -239,4 +269,47 @@ void AMultiplayer_IICharacter::DoFire()
 	{
 		WeaponComponent->TryStartFire();
 	}
+}
+
+void AMultiplayer_IICharacter::StartSprinting()
+{
+	if (AMultiplayerPlayerState* OnlinePS = GetPlayerState<AMultiplayerPlayerState>())
+	{
+		if (UAbilitySystemComponent* ASC = OnlinePS->GetAbilitySystemComponent())
+		{
+			if (ASC->HasMatchingGameplayTag(StunnedTag))
+			{
+				return;
+			}
+			
+			if (!HasStateTag(SprintingTag))
+			{
+				ASC->AddLooseGameplayTag(SprintingTag);
+			}
+		}
+	}
+}
+
+void AMultiplayer_IICharacter::StopSprinting()
+{
+	if (AMultiplayerPlayerState* OnlinePS = GetPlayerState<AMultiplayerPlayerState>())
+	{
+		if (UAbilitySystemComponent* ASC = OnlinePS->GetAbilitySystemComponent())
+		{
+			ASC->RemoveLooseGameplayTag(SprintingTag);
+		}
+	}
+}
+
+bool AMultiplayer_IICharacter::HasStateTag(FGameplayTag TagToCheck) const
+{
+	if (AMultiplayerPlayerState* OnlinePS = GetPlayerState<AMultiplayerPlayerState>())
+	{
+		if (UAbilitySystemComponent* ASC = OnlinePS->GetAbilitySystemComponent())
+		{
+			return ASC->HasMatchingGameplayTag(TagToCheck);
+		}
+		return false;
+	}
+	return false;
 }

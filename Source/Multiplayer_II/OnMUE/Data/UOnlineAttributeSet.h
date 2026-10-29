@@ -26,6 +26,11 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//Health Attribute
+	UPROPERTY(ReplicatedUsing = OnRep_Health, BlueprintReadOnly, category = "Attributes")
+	FGameplayAttributeData Health;
+	ATTRIBUTE_ACCESSORS(UUOnlineAttributeSet, Health)
+	
+	//MaxHealth Attribute
 	UPROPERTY(ReplicatedUsing = OnRep_MaxHealth, BlueprintReadOnly, category = "Attributes")
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORS(UUOnlineAttributeSet, MaxHealth)
@@ -38,7 +43,10 @@ public:
 protected:
 
 	UFUNCTION()
-	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldHealth);
+	virtual void OnRep_Health(const FGameplayAttributeData& OldHealth);
+	
+	UFUNCTION()
+	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
 	
 	UFUNCTION()
 	virtual void OnRep_Stamina(const FGameplayAttributeData& OldStamina);

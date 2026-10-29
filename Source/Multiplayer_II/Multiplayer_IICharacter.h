@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "OnMUE/Data/IAimSource.h"
@@ -53,6 +54,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* FireInput;
 	
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* SprintInputAction;
+	
 public:
 	AMultiplayer_IICharacter();
 
@@ -91,10 +95,18 @@ protected:
 	/** Handles jump end inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
-
-	/*Destroy the actor and adds a point to the score*/
+	
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoFire();
+	
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void StartSprinting();
+	
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void StopSprinting();
+	
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	bool HasStateTag(FGameplayTag TagToCheck) const;
 
 protected:
 
@@ -115,5 +127,13 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 
 	void InitAbilityActorInfo();
+	
+	UFUNCTION(BlueprintCallable, Category = "State")
+	void ToggleStun(bool bIsStunned);
+	
+private:
+	//Tag Cache
+	FGameplayTag SprintingTag;
+	FGameplayTag StunnedTag;
 };
 
