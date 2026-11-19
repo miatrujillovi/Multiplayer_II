@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "OnMUE/Data/IAimSource.h"
+#include "AbilitySystemInterface.h"
 #include "Multiplayer_IICharacter.generated.h"
 
 class UInputComponent;
@@ -21,7 +22,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
  *  A basic first person character
  */
 UCLASS(abstract)
-class AMultiplayer_IICharacter : public ACharacter, public IAimSource
+class AMultiplayer_IICharacter : public ACharacter, public IAimSource, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -68,6 +69,11 @@ public:
 	virtual FVector GetAimOrigin() const override;
 	
 	virtual FVector GetAimDirection() const override;
+	
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
 
 protected:
 

@@ -98,6 +98,18 @@ FVector AMultiplayer_IICharacter::GetAimDirection() const
 	return GetViewRotation().Vector(); //Returns the pawn rotation
 }
 
+UAbilitySystemComponent* AMultiplayer_IICharacter::GetAbilitySystemComponent() const
+{
+	AMultiplayerPlayerState* PS = GetPlayerState<AMultiplayerPlayerState>();
+	
+	if (PS)
+	{
+		return PS->GetAbilitySystemComponent();
+	}
+	
+	return nullptr;
+}
+
 void AMultiplayer_IICharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -155,6 +167,20 @@ void AMultiplayer_IICharacter::InitAbilityActorInfo()
 			//Get Owner and Avatar
 			ASC->InitAbilityActorInfo(OnlinePS, this);
 			
+			//-------------------------
+			if (HasAuthority() || IsValid(ASC))
+			{
+				for(TSubclassOf<UGameplayAbility> AbilityClass: DefaultAbilities)
+				{
+					if (AbilityClass)
+					{
+						FGameplayAbilitySpec AbilitySpec(AbilityClass, 1, INDEX_NONE, this);
+						ASC->GiveAbility(AbilitySpec);
+					}
+				}
+			}
+			
+			UAbilitySystemComponent* AbilitySystemComponent = ASC;
 			//AbilitySystemComponent = ASC;
 		}
 	}
@@ -277,15 +303,15 @@ void AMultiplayer_IICharacter::StartSprinting()
 	{
 		if (UAbilitySystemComponent* ASC = OnlinePS->GetAbilitySystemComponent())
 		{
+			// Ask if the player is stunned
 			if (ASC->HasMatchingGameplayTag(StunnedTag))
 			{
 				return;
 			}
+			FGameplayTag ActionSprintTag = FGameplayTag::RequestGameplayTag(FName("Ability.Action.Sprint"));
 			
-			if (!HasStateTag(SprintingTag))
-			{
-				ASC->AddLooseGameplayTag(SprintingTag);
-			}
+			// The client ask if the activate ability with the corresponding tag
+			ASC->TryActivateAbilitiesByTag(FGameplayTagContainer(ActionSprintTag));
 		}
 	}
 }
@@ -296,7 +322,11 @@ void AMultiplayer_IICharacter::StopSprinting()
 	{
 		if (UAbilitySystemComponent* ASC = OnlinePS->GetAbilitySystemComponent())
 		{
-			ASC->RemoveLooseGameplayTag(SprintingTag);
+			FGameplayTag ActionSprintTag = FGameplayTag::RequestGameplayTag(FName("Ability.Action.Sprint"));
+			FGameplayTagContainer SprintTags(ActionSprintTag);
+			
+			//Cancel the ability
+			ASC->CancelAbilities(&SprintTags);
 		}
 	}
 }

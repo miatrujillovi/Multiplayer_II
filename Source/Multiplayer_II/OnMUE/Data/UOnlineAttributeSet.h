@@ -39,6 +39,11 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_Stamina, BlueprintReadOnly, category = "Attributes")
 	FGameplayAttributeData Stamina;
 	ATTRIBUTE_ACCESSORS(UUOnlineAttributeSet, Stamina)
+	
+	//Armor Attribute
+	UPROPERTY(ReplicatedUsing = OnRep_Armor, BlueprintReadOnly, category = "Attributes")
+	FGameplayAttributeData Armor;
+	ATTRIBUTE_ACCESSORS(UUOnlineAttributeSet, Armor)
 
 protected:
 
@@ -50,4 +55,7 @@ protected:
 	
 	UFUNCTION()
 	virtual void OnRep_Stamina(const FGameplayAttributeData& OldStamina);
+	
+	UFUNCTION()
+	virtual void OnRep_Armor(const FGameplayAttributeData& OldArmor);
 };

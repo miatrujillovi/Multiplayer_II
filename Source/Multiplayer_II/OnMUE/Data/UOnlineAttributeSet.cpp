@@ -19,6 +19,7 @@ void UUOnlineAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME_CONDITION_NOTIFY(UUOnlineAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UUOnlineAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UUOnlineAttributeSet, Stamina, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UUOnlineAttributeSet, Armor, COND_None, REPNOTIFY_Always);
 }
 
 void UUOnlineAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth)
@@ -34,4 +35,9 @@ void UUOnlineAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldMaxH
 void UUOnlineAttributeSet::OnRep_Stamina(const FGameplayAttributeData& OldStamina)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UUOnlineAttributeSet, Stamina, OldStamina);
+}
+
+void UUOnlineAttributeSet::OnRep_Armor(const FGameplayAttributeData& OldArmor)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UUOnlineAttributeSet, Armor, OldArmor);
 }

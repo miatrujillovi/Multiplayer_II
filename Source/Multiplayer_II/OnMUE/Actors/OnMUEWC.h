@@ -18,14 +18,17 @@ public:
 	// Sets default values for this component's properties
 	UOnMUEWC();
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	UWeaponData* WeaponDefinition;
-	
 	void TryStartFire();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UWeaponData* WeaponDefinition;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
 public:	
 	// Called every frame
