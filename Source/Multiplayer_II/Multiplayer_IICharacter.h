@@ -58,6 +58,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* SprintInputAction;
 	
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* MeleeAction;
+	
 public:
 	AMultiplayer_IICharacter();
 
@@ -112,7 +115,10 @@ protected:
 	void StopSprinting();
 	
 	UFUNCTION(BlueprintCallable, Category = "Input")
-	bool HasStateTag(FGameplayTag TagToCheck) const;
+	void DoMelee();
+	
+	/*UFUNCTION(BlueprintCallable, Category = "Input")
+	bool HasStateTag(FGameplayTag TagToCheck) const;*/
 
 protected:
 

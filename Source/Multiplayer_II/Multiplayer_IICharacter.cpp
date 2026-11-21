@@ -229,6 +229,9 @@ void AMultiplayer_IICharacter::SetupPlayerInputComponent(UInputComponent* Player
 		//Sprint
 		EnhancedInputComponent->BindAction(SprintInputAction, ETriggerEvent::Triggered, this, &AMultiplayer_IICharacter::StartSprinting);
 		EnhancedInputComponent->BindAction(SprintInputAction, ETriggerEvent::Completed, this, &AMultiplayer_IICharacter::StopSprinting);
+		
+		//Melee
+		EnhancedInputComponent->BindAction(MeleeAction, ETriggerEvent::Triggered, this, &AMultiplayer_IICharacter::DoMelee);
 	}
 	else
 	{
@@ -331,7 +334,26 @@ void AMultiplayer_IICharacter::StopSprinting()
 	}
 }
 
-bool AMultiplayer_IICharacter::HasStateTag(FGameplayTag TagToCheck) const
+void AMultiplayer_IICharacter::DoMelee()
+{
+	if (AMultiplayerPlayerState* OnlinePS = GetPlayerState<AMultiplayerPlayerState>())
+	{
+		if (UAbilitySystemComponent* ASC = OnlinePS->GetAbilitySystemComponent())
+		{
+			// Ask if the player is stunned
+			if (ASC->HasMatchingGameplayTag(StunnedTag))
+			{
+				return;
+			}
+			FGameplayTag ActionMeleeTag = FGameplayTag::RequestGameplayTag(FName("Ability.Action.Melee"));
+			
+			// The client ask if the activate ability with the corresponding tag
+			ASC->TryActivateAbilitiesByTag(FGameplayTagContainer(ActionMeleeTag));
+		}
+	}
+}
+
+/*bool AMultiplayer_IICharacter::HasStateTag(FGameplayTag TagToCheck) const
 {
 	if (AMultiplayerPlayerState* OnlinePS = GetPlayerState<AMultiplayerPlayerState>())
 	{
@@ -342,4 +364,4 @@ bool AMultiplayer_IICharacter::HasStateTag(FGameplayTag TagToCheck) const
 		return false;
 	}
 	return false;
-}
+}*/
