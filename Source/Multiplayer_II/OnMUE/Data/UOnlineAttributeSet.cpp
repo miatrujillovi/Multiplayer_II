@@ -10,6 +10,7 @@ UUOnlineAttributeSet::UUOnlineAttributeSet()
 	InitHealth(100.0f);
 	InitMaxHealth(100.0f);
 	InitStamina(100.0f);
+	InitArmor(50.0f);
 }
 
 void UUOnlineAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

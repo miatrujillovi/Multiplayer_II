@@ -18,6 +18,8 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttributeChangedSignature, float, NewValue, float, MaxValue);
+
 /**
  *  A basic first person character
  */
@@ -77,6 +79,15 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
+	
+	UPROPERTY(BlueprintAssignable, Category = "GAS|UI")
+	FOnAttributeChangedSignature OnHealthChanged;
+	
+	UPROPERTY(BlueprintAssignable, Category = "GAS|UI")
+	FOnAttributeChangedSignature OnArmorChanged;
+	
+	UFUNCTION(BlueprintCallable, Category = "GAS|UI")
+	void BroadcastInitialAttributes();
 
 protected:
 
@@ -119,6 +130,8 @@ protected:
 	
 	/*UFUNCTION(BlueprintCallable, Category = "Input")
 	bool HasStateTag(FGameplayTag TagToCheck) const;*/
+	
+	void BindAttributeCallbacks(UAbilitySystemComponent* ASC);
 
 protected:
 

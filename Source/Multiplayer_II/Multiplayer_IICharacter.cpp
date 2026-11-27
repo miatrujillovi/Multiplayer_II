@@ -11,6 +11,7 @@
 #include "AbilitySystemComponent.h"
 #include "OnMUE/Online/MultiplayerPlayerState.h"
 #include "GameplayTagsManager.h"
+#include "OnMUE/Data/UOnlineAttributeSet.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
@@ -110,6 +111,22 @@ UAbilitySystemComponent* AMultiplayer_IICharacter::GetAbilitySystemComponent() c
 	return nullptr;
 }
 
+void AMultiplayer_IICharacter::BroadcastInitialAttributes()
+{
+	if (AMultiplayerPlayerState* PS = GetPlayerState<AMultiplayerPlayerState>())
+	{
+		if (UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent())
+		{
+			const float CurrentHealth = ASC->GetNumericAttribute(UUOnlineAttributeSet::GetHealthAttribute());
+			const float CurrentMaxHealth = ASC->GetNumericAttribute(UUOnlineAttributeSet::GetMaxHealthAttribute());
+			const float CurrentArmor = ASC->GetNumericAttribute(UUOnlineAttributeSet::GetArmorAttribute());
+			
+			OnHealthChanged.Broadcast(CurrentHealth, CurrentMaxHealth);
+			OnArmorChanged.Broadcast(CurrentArmor, 100.0f);
+		}
+	}
+}
+
 void AMultiplayer_IICharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -145,6 +162,8 @@ void AMultiplayer_IICharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	InitAbilityActorInfo();
+	
+	BroadcastInitialAttributes();
 }
 
 void AMultiplayer_IICharacter::PossessedBy(AController* NewController)
@@ -152,6 +171,8 @@ void AMultiplayer_IICharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	InitAbilityActorInfo();
+	
+	BroadcastInitialAttributes();
 }
 
 void AMultiplayer_IICharacter::InitAbilityActorInfo()
@@ -166,6 +187,7 @@ void AMultiplayer_IICharacter::InitAbilityActorInfo()
 		{
 			//Get Owner and Avatar
 			ASC->InitAbilityActorInfo(OnlinePS, this);
+			BindAttributeCallbacks(ASC);
 			
 			//-------------------------
 			if (HasAuthority() || IsValid(ASC))
@@ -351,6 +373,24 @@ void AMultiplayer_IICharacter::DoMelee()
 			ASC->TryActivateAbilitiesByTag(FGameplayTagContainer(ActionMeleeTag));
 		}
 	}
+}
+
+void AMultiplayer_IICharacter::BindAttributeCallbacks(UAbilitySystemComponent* ASC)
+{
+	if (!ASC) return;
+	
+	//On Value Changed Health
+	ASC->GetGameplayAttributeValueChangeDelegate(UUOnlineAttributeSet::GetHealthAttribute()).AddLambda([this, ASC](const FOnAttributeChangeData& Data)
+	{
+		const float MaxHealth = ASC->GetNumericAttribute(UUOnlineAttributeSet::GetMaxHealthAttribute());
+		OnHealthChanged.Broadcast(Data.NewValue, MaxHealth);
+	});
+	
+	//On Value Changed Armor
+	ASC->GetGameplayAttributeValueChangeDelegate(UUOnlineAttributeSet::GetArmorAttribute()).AddLambda([this, ASC](const FOnAttributeChangeData& Data)
+	{
+		OnArmorChanged.Broadcast(Data.NewValue, 100.0f);
+	});
 }
 
 /*bool AMultiplayer_IICharacter::HasStateTag(FGameplayTag TagToCheck) const
