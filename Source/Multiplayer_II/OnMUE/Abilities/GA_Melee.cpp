@@ -115,7 +115,9 @@ void UGA_Melee::OnEventReceived(FGameplayEventData Payload)
 			FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), EffectContext);
 			if (SpecHandle.IsValid())
 			{
-				SpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.Damage")), MeleeRange);
+				SpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.Damage")), MeleeDamage);
+				
+				TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 			}
 		}
 	}

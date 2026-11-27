@@ -25,7 +25,7 @@ void UUOnlineAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 void UUOnlineAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UUOnlineAttributeSet, MaxHealth, OldHealth);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UUOnlineAttributeSet, Health, OldHealth);
 }
 
 void UUOnlineAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth)

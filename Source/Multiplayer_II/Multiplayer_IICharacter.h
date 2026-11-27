@@ -160,5 +160,8 @@ private:
 	//Tag Cache
 	FGameplayTag SprintingTag;
 	FGameplayTag StunnedTag;
+	
+	FDelegateHandle HealthChangedDelegateHandle;
+	FDelegateHandle ArmorChangedDelegateHandle;
 };
 

@@ -379,8 +379,34 @@ void AMultiplayer_IICharacter::BindAttributeCallbacks(UAbilitySystemComponent* A
 {
 	if (!ASC) return;
 	
+	// Remove previous bindings
+	if (HealthChangedDelegateHandle.IsValid())
+	{
+		ASC->GetGameplayAttributeValueChangeDelegate(UUOnlineAttributeSet::GetHealthAttribute()).Remove(HealthChangedDelegateHandle);
+	}
+
+	if (ArmorChangedDelegateHandle.IsValid())
+	{
+		ASC->GetGameplayAttributeValueChangeDelegate(UUOnlineAttributeSet::GetArmorAttribute()).Remove(ArmorChangedDelegateHandle);
+	}
+
+	// Bind Health
+	HealthChangedDelegateHandle =
+		ASC->GetGameplayAttributeValueChangeDelegate(UUOnlineAttributeSet::GetHealthAttribute()).AddLambda([this, ASC](const FOnAttributeChangeData& Data)
+	{
+		const float MaxHealth = ASC->GetNumericAttribute(UUOnlineAttributeSet::GetMaxHealthAttribute());
+
+		OnHealthChanged.Broadcast(Data.NewValue, MaxHealth);
+	});
+
+	// Bind Armor
+	ArmorChangedDelegateHandle = ASC->GetGameplayAttributeValueChangeDelegate(UUOnlineAttributeSet::GetArmorAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+	{
+		OnArmorChanged.Broadcast(Data.NewValue, 100.0f);
+	});
+	
 	//On Value Changed Health
-	ASC->GetGameplayAttributeValueChangeDelegate(UUOnlineAttributeSet::GetHealthAttribute()).AddLambda([this, ASC](const FOnAttributeChangeData& Data)
+	/*ASC->GetGameplayAttributeValueChangeDelegate(UUOnlineAttributeSet::GetHealthAttribute()).AddLambda([this, ASC](const FOnAttributeChangeData& Data)
 	{
 		const float MaxHealth = ASC->GetNumericAttribute(UUOnlineAttributeSet::GetMaxHealthAttribute());
 		OnHealthChanged.Broadcast(Data.NewValue, MaxHealth);
@@ -390,7 +416,7 @@ void AMultiplayer_IICharacter::BindAttributeCallbacks(UAbilitySystemComponent* A
 	ASC->GetGameplayAttributeValueChangeDelegate(UUOnlineAttributeSet::GetArmorAttribute()).AddLambda([this, ASC](const FOnAttributeChangeData& Data)
 	{
 		OnArmorChanged.Broadcast(Data.NewValue, 100.0f);
-	});
+	});*/
 }
 
 /*bool AMultiplayer_IICharacter::HasStateTag(FGameplayTag TagToCheck) const
